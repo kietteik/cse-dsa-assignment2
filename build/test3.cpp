@@ -66,33 +66,27 @@ int main(int argc, char **argv)
     main->process("INS BCD BCD 7 2.2 3.3");
     main->process("UPD NZD USD 9 2.2 3.3");
     main->process("UPD BCD BCD 7 4.4 3.3");
+    main->process("UPD BCD BCD 6 4.4 3.3");
 
-    main->process("SD 1000");
-    main->process("SL 100");
-    main->process("CD");
-    main->process("INS EUR USD 1101 1.102090 1.102150");
-    main->process("INS EUR USD 1103 1.01284 1.01235");
-    main->process("INS EUR USD 1107 1.101950 1.101980");
-    main->process("UPD EUR USD 1108 1.01284 1.01235");
-    cout << "OS PROCESS: " << main->process("OS EUR USD 1101 0.33 1123456") << endl;
+    ptr = main->mainlist.findExch("NZD", "USD");
+    cout << "NZD: USD\n";
+    ptr->data.tree.printTreeStructure();
 
-    ptr = main->mainlist.findExch("EUR", "USD");
-    cout << "EUR: USD\n";
+    ptr = main->mainlist.findExch("BCD", "BCD");
+    cout << "BCD: BCD\n";
     ptr->data.tree.printTreeStructure();
 
     Node<TimeUnit> *temp;
-    TimeUnit atime;
-    atime.time = stoi("1101");
-    temp = ptr->data.tree.findNearestTime(atime);
+    TimeUnit a;
+    a.time = 800;
+    temp = ptr->data.tree.findNearestTime(a);
     if (temp == NULL)
     {
-        return -1;
+        cout << "NULL!\n";
     }
-    openDetail open;
-    open.lot = 0.33;
-    open.oMoney = temp->data.BP * open.lot * main->mainlist.mn * main->mainlist.lv;
+    else
+        cout << temp->data.time;
 
-    cout << (int)open.oMoney << endl;
     main->mainlist.traverse(printExchange);
     delete main;
 }

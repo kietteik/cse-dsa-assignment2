@@ -375,6 +375,9 @@ public:
 
 	bool checkTimeRangeTravRec(Node<T> *&node, T &value1, T &value2);
 	bool checkTimeRangeTrav(T &value1, T &value2);
+	Node<T> *findNearestTimeRec(Node<T> *&node, T &value);
+	Node<T> *findNearestTime(T &value);
+	Node<T> *minNode(Node<T> *&node);
 
 	AVL()
 	{
@@ -901,8 +904,8 @@ void AVL<T>::printTreeStructure()
 		else
 		{
 
-			cout << temp->data.time << "-" << temp->data.BP;
-			// cout << temp->data.time;
+			// cout << temp->data.time << "-" << temp->data.BP;
+			cout << temp->data.time;
 			q.push(temp->left);
 			q.push(temp->right);
 		}
@@ -949,6 +952,64 @@ bool AVL<T>::checkTimeRangeTrav(T &value1, T &value2)
 	return checkTimeRangeTravRec(this->root, value1, value2);
 }
 
+template <class T>
+Node<T> *AVL<T>::findNearestTimeRec(Node<T> *&node, T &value)
+{
+	if (node == NULL)
+	{
+		return NULL;
+	}
+	else if (value < node->data)
+	{
+		if (node->left == NULL)
+		{
+			return NULL;
+		}
+		else
+		{
+			return findNearestTimeRec(node->left, value);
+		}
+	}
+	else if (value > node->data)
+	{
+		if (node->right == NULL)
+		{
+			return node;
+		}
+		else if (value < node->right->data && node->right->left == NULL)
+		{
+			return node;
+		}
+		else if (value < minNode(node->right->left)->data)
+		{
+			return node;
+		}
+		else
+		{
+			return findNearestTimeRec(node->right, value);
+		}
+	}
+	else
+	{
+		return node;
+	}
+}
+
+template <class T>
+Node<T> *AVL<T>::findNearestTime(T &value)
+{
+	return findNearestTimeRec(this->root, value);
+}
+
+template <class T>
+Node<T> *AVL<T>::minNode(Node<T> *&node)
+{
+	if (node->left == NULL)
+		return node;
+	else
+		return minNode(node->left);
+}
+
 //--------------------__AVL TREE__-----------------------
 
 struct TimeUnit
@@ -979,9 +1040,21 @@ struct Exchange
 };
 void printExchange(Exchange &n);
 
+struct openDetail
+{
+	float lot;
+	float oMoney;
+};
+
 class eList : public LList<Exchange>
 {
+
 public:
+	bool firstSet;
+	int mn;
+	float lv;
+	map<int, openDetail> openTradeList;
+
 	Link<Exchange> *findExch(string bc, string qc)
 	{
 		Link<Exchange> *pTemp = this->head;
@@ -1011,4 +1084,11 @@ public:
 	int insert(const string *sp, const int n);
 	int update(const string *sp, const int n);
 	int del(const string *sp, const int n);
+	int sd(const string *sp, const int n);
+	int cd(const string *sp, const int n);
+	int sl(const string *sp, const int n);
+	int ob(const string *sp, const int n);
+	int os(const string *sp, const int n);
+	int cb(const string *sp, const int n);
+	int cs(const string *sp, const int n);
 };
