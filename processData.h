@@ -976,9 +976,12 @@ Node<T> *AVL<T>::findNearestTimeRec(Node<T> *&node, T &value)
 		{
 			return node;
 		}
-		else if (value < node->right->data && node->right->left == NULL)
+		else if (node->right->left == NULL)
 		{
-			return node;
+			if (value < node->right->data)
+				return node;
+			else
+				return findNearestTimeRec(node->right, value);
 		}
 		else if (value < minNode(node->right->left)->data)
 		{
@@ -1042,8 +1045,12 @@ void printExchange(Exchange &n);
 
 struct openDetail
 {
+	int time;
+	string QC;
+	string BC;
 	float lot;
 	float oMoney;
+	bool isOpenBuy;
 };
 
 class eList : public LList<Exchange>

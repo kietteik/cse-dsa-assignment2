@@ -94,49 +94,49 @@ int ProcessData::process(string line)
 		return -1;
 	}
 	int res = -1;
-	// try
-	// {
-	switch (s_mapCodeValues[p[0]])
+	try
 	{
-	case sdCode:
-		res = this->sd(p, n);
-		break;
-	case cdCode:
-		res = this->cd(p, n);
-		break;
-	case slCode:
-		res = this->sl(p, n);
-		break;
-	case insCode:
-		res = this->insert(p, n);
-		break;
-	case updCode:
-		res = this->update(p, n);
-		break;
-	case delCode:
-		res = this->del(p, n);
-		break;
-	case obCode:
-		res = this->ob(p, n);
-		break;
-	// case cbCode:
-	// 	res = this->cb(p, n);
-	// 	break;
-	case osCode:
-		res = this->os(p, n);
-		break;
-	// case csCode:
-	// 	res = this->cs(p, n);
-	// 	break;
-	default:
-		res = -1;
+		switch (s_mapCodeValues[p[0]])
+		{
+		case sdCode:
+			res = this->sd(p, n);
+			break;
+		case cdCode:
+			res = this->cd(p, n);
+			break;
+		case slCode:
+			res = this->sl(p, n);
+			break;
+		case insCode:
+			res = this->insert(p, n);
+			break;
+		case updCode:
+			res = this->update(p, n);
+			break;
+		case delCode:
+			res = this->del(p, n);
+			break;
+		case obCode:
+			res = this->ob(p, n);
+			break;
+		case cbCode:
+			res = this->cb(p, n);
+			break;
+		case osCode:
+			res = this->os(p, n);
+			break;
+		case csCode:
+			res = this->cs(p, n);
+			break;
+		default:
+			res = -1;
+		}
 	}
-	// }
-	// catch (invalid_argument iax)
-	// {
-	// 	delete[] p;
-	// 	return res;
-	// }
+	catch (invalid_argument iax)
+	{
+		delete[] p;
+		return res;
+	}
 	delete[] p;
 	return res;
 }
@@ -330,8 +330,12 @@ int ProcessData::ob(const string *sp, const int n)
 			return -1;
 		}
 		openDetail open;
+		open.time = atime.time;
+		open.QC = ptr->data.QC;
+		open.BC = ptr->data.BC;
+		open.isOpenBuy = true;
 		open.lot = stof(sp[4]);
-		open.oMoney = temp->data.AP * open.lot;
+		open.oMoney = temp->data.AP * open.lot * 100000;
 		mainlist.openTradeList.insert({id, open});
 		return (int)open.oMoney;
 	}
@@ -366,10 +370,103 @@ int ProcessData::os(const string *sp, const int n)
 			return -1;
 		}
 		openDetail open;
+		open.time = atime.time;
+		open.QC = ptr->data.QC;
+		open.BC = ptr->data.BC;
+		open.isOpenBuy = false;
 		open.lot = stof(sp[4]);
-		open.oMoney = temp->data.BP * open.lot * mainlist.mn * mainlist.lv;
+		open.oMoney = temp->data.BP * open.lot * 100000;
 		mainlist.openTradeList.insert({id, open});
 		return (int)open.oMoney;
+	}
+}
+
+int ProcessData::cb(const string *sp, const int n)
+{
+	if (n != 3 || (!isDigitString(sp[1])) || (!isDigitString(sp[2])))
+	{
+		return -1;
+	}
+	int id = stoi(sp[2]);
+	Node<TimeUnit> *temp;
+	TimeUnit atime;
+	atime.time = stoi(sp[1]);
+	if (!this->mainlist.openTradeList.count(id))
+	{
+		return -1;
+	}
+	else if (atime.time < this->mainlist.openTradeList[id].time || this->mainlist.openTradeList[id].isOpenBuy)
+		return -1;
+	else
+	{
+		openDetail open = this->mainlist.openTradeList[id];
+		Link<Exchange> *ptr;
+		ptr = this->mainlist.findExch(open.BC, open.QC);
+		if (ptr == NULL)
+		{
+			return -1;
+		}
+		temp = ptr->data.tree.findNearestTime(atime);
+		if (temp == NULL)
+		{
+			return -1;
+		}
+		float profit = open.oMoney - (temp->data.AP * open.lot * 100000);
+		this->mainlist.openTradeList.erase(id);
+
+		if (open.QC == "USD")
+			return profit;
+		else
+			return (profit / temp->data.AP);
+	}
+}
+int ProcessData::cs(const string *sp, const int n)
+{
+	if (n != 3 || !isDigitString(sp[1]) || !isDigitString(sp[2]))
+	{
+		// cout << "invalid\n";
+		return -1;
+	}
+	int id = stoi(sp[2]);
+	Node<TimeUnit> *temp;
+	TimeUnit atime;
+	atime.time = stoi(sp[1]);
+	if (!this->mainlist.openTradeList.count(id))
+	{
+		// cout << "invalid2\n";
+
+		return -1;
+	}
+	else if (atime.time < this->mainlist.openTradeList[id].time || !this->mainlist.openTradeList[id].isOpenBuy)
+	{
+		// cout << "invalid3\n";
+
+		return -1;
+	}
+	else
+	{
+		openDetail open = this->mainlist.openTradeList[id];
+		Link<Exchange> *ptr;
+		ptr = this->mainlist.findExch(open.BC, open.QC);
+		if (ptr == NULL)
+		{
+			// cout << "invalid4\n";
+
+			return -1;
+		}
+		temp = ptr->data.tree.findNearestTime(atime);
+		if (temp == NULL)
+		{
+			// cout << "invalid5\n";
+
+			return -1;
+		}
+		float profit = -open.oMoney + (temp->data.BP * open.lot * 100000);
+		this->mainlist.openTradeList.erase(id);
+		if (open.QC == "USD")
+			return profit;
+		else
+			return (profit / temp->data.AP);
 	}
 }
 
