@@ -60,7 +60,7 @@ int ProcessData::split(string line, string *&sp)
 {
 	sp = new string[MAXSIZECODE];
 	const string SEP = " ";
-	int pos, lastpos = 0, idx = 0;
+	size_t pos, lastpos = 0, idx = 0;
 	do
 	{
 		pos = line.find(SEP, lastpos);
@@ -139,25 +139,26 @@ int ProcessData::del(const string *sp, const int n)
 {
 	if (n > 5 || n < 3 || sp[1].length() > 3 || sp[2].length() > 3)
 	{
-		cout << "validin";
+		// cout << "validin";
 		return -1;
 	}
 	Link<Exchange> *ptr = this->mainlist.findExch(sp[1], sp[2]);
-	cout << "n = " << n << endl;
 	if (ptr == NULL)
 	{
-		cout << "ptr is null";
+		// cout << "ptr is null";
 		return -1;
 	}
 	else
 	{
 		if (ptr->data.tree.root == NULL)
 		{
-			cout << "root is null";
+			// cout << "root is null";
 			return -1;
 		}
 		else if (n == 5)
 		{
+			if (sp[3] > sp[4])
+				return -1;
 			TimeUnit a;
 			a.time = stoi(sp[3]);
 			TimeUnit b;
@@ -185,10 +186,6 @@ int ProcessData::del(const string *sp, const int n)
 		}
 		else
 		{
-			TimeUnit a;
-			a.time = 0;
-			TimeUnit b;
-			b.time = 1410065400;
 			ptr->data.tree.~AVL();
 			return 1;
 		}
