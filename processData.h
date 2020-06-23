@@ -1104,4 +1104,7 @@ public:
 	int os(const string *sp, const int n);
 	int cb(const string *sp, const int n);
 	int cs(const string *sp, const int n);
+	double csProfit(int time, openDetail open);
+	double cbProfit(int time, openDetail open);
+	int myround(double a);
 };
