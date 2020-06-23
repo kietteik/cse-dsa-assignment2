@@ -2,6 +2,7 @@
 
 enum CodeValue
 {
+	rejectZero,
 	sdCode,
 	cdCode,
 	slCode,
@@ -52,7 +53,7 @@ bool isDigitString(string a)
 {
 	for (size_t i = 0; i < a.length(); i++)
 	{
-		if (!isdigit(a[i]))
+		if (!isdigit(a[i]) && a[i] != '\0')
 			return false;
 	}
 	return true;
@@ -84,11 +85,18 @@ int ProcessData::split(string line, string *&sp)
 int ProcessData::process(string line)
 {
 	// cout << line << endl;
-
+	if (line.length() < 2)
+	{
+		return -1;
+	}
+	// if (!isalpha(line[line.length() - 1]) && !isdigit(line[line.length() - 1]))
+	// 	line = line.substr(0, line.length() - 1);
 	string *p;
-	int n = ProcessData::split(line, p);
-	// cout << p[0] << endl;
-	if (n <= 0)
+	int n;
+	n = ProcessData::split(line, p);
+	// cout << p[0] << ": " << p[0].length() << endl;
+	// cout << n << endl;
+	if (n <= 0 || p[0].length() == 1)
 	{
 		delete[] p;
 		return -1;
@@ -284,6 +292,7 @@ int ProcessData::cd(const string *sp, const int n)
 
 int ProcessData::sl(const string *sp, const int n)
 {
+	// cout << "sl called\n";
 	if (n != 2 || !isDigitString(sp[1]))
 	{
 		return -1;
@@ -415,9 +424,15 @@ int ProcessData::cb(const string *sp, const int n)
 		this->mainlist.openTradeList.erase(id);
 
 		if (open.QC == "USD")
+		{
+			mainlist.mn += profit;
 			return profit;
+		}
 		else
+		{
+			mainlist.mn += profit;
 			return (profit / temp->data.AP);
+		}
 	}
 }
 int ProcessData::cs(const string *sp, const int n)
@@ -464,9 +479,15 @@ int ProcessData::cs(const string *sp, const int n)
 		float profit = -open.oMoney + (temp->data.BP * open.lot * 100000);
 		this->mainlist.openTradeList.erase(id);
 		if (open.QC == "USD")
+		{
+			mainlist.mn += profit;
 			return profit;
+		}
 		else
+		{
+			mainlist.mn += profit;
 			return (profit / temp->data.AP);
+		}
 	}
 }
 

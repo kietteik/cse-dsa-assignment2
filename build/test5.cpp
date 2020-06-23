@@ -67,21 +67,23 @@ int main(int argc, char **argv)
     main->process("UPD NZD USD 9 2.2 3.3");
     main->process("UPD BCD BCD 7 4.4 3.3");
 
-    main->process("SD 1000");
-    main->process("SL 100");
-    main->process("CD");
+    cout << "SL " << main->process("SL 100") << endl;
+    cout << "MN: " << main->mainlist.mn;
+    cout << "SD: " << main->process("SD 1000") << endl;
+    cout << "SL " << main->process("SL 100") << endl;
+    cout << "SD: " << main->process("CD") << endl;
     main->process("INS EUR USD 1101 1.102090 1.102150");
     main->process("INS EUR USD 1103 1.01284 1.01235");
     main->process("INS EUR USD 1107 1.101950 1.101980");
     main->process("UPD EUR USD 1108 1.01284 1.01235");
+
     cout << "OS PROCESS: " << main->process("OS EUR USD 1101 0.33 1123456") << endl;
 
     ptr = main->mainlist.findExch("EUR", "USD");
     cout << "EUR: USD\n";
     ptr->data.tree.printTreeStructure();
 
-    cout << "count: " << main->mainlist.openTradeList.count(1123456);
-    cout << "CB PROCESS: " << main->process("CB 1107 1123456") << endl;
+    // cout << "CB PROCESS: " << main->process("CB 1107 1123456") << endl;
 
     Node<TimeUnit> *temp;
     TimeUnit atime;
@@ -96,6 +98,6 @@ int main(int argc, char **argv)
     open.oMoney = temp->data.BP * open.lot * main->mainlist.mn * main->mainlist.lv;
 
     cout << (int)open.oMoney << endl;
-    main->mainlist.traverse(printExchange);
+    // main->mainlist.traverse(printExchange);
     delete main;
 }

@@ -1075,6 +1075,12 @@ public:
 		}
 		return NULL;
 	}
+	eList()
+	{
+		mn = 0;
+		firstSet = false;
+		lv = 0;
+	}
 };
 
 class ProcessData
