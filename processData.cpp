@@ -58,6 +58,7 @@ bool isDigitString(string a)
 	}
 	return true;
 }
+
 //-----------------------utilities-------------------------
 
 //-----------------------PROCESS DATA-------------------------
@@ -89,7 +90,7 @@ int ProcessData::process(string line)
 	{
 		return -1;
 	}
-	if (!isalpha(line[line.length() - 1]) && !isalpha(line[line.length() - 1]))
+	if (!isalpha(line[line.length() - 1]) && !isdigit(line[line.length() - 1]))
 		line = line.substr(0, line.length() - 1);
 	string *p;
 	int n;
@@ -160,8 +161,8 @@ int ProcessData::insert(const string *sp, const int n)
 	Link<Exchange> *ptr = this->mainlist.findExch(sp[1], sp[2]);
 	TimeUnit a;
 	a.time = stoi(sp[3]);
-	a.BP = stof(sp[4]);
-	a.AP = stof(sp[5]);
+	a.BP = stod(sp[4]);
+	a.AP = stod(sp[5]);
 	if (ptr != NULL)
 	{
 		ptr->data.tree.insert(a);
@@ -242,8 +243,8 @@ int ProcessData::update(const string *sp, const int n)
 	Link<Exchange> *ptr = this->mainlist.findExch(sp[1], sp[2]);
 	TimeUnit a;
 	a.time = stoi(sp[3]);
-	a.BP = stof(sp[4]);
-	a.AP = stof(sp[5]);
+	a.BP = stod(sp[4]);
+	a.AP = stod(sp[5]);
 	if (ptr == NULL)
 	{
 		return -1;
@@ -271,15 +272,15 @@ int ProcessData::sd(const string *sp, const int n)
 		this->mainlist.firstSet = true;
 		return 1;
 	}
-	else if (this->mainlist.mn <= 0)
-	{
-		return -1;
-	}
+	// else if (this->mainlist.mn <= 0)
+	// {
+	// 	return -1;
+	// }
 	//3.3.2 contraint
-	else if (this->mainlist.mn < stoi(sp[1]) && this->mainlist.openTradeList.empty())
-	{
-		return -1;
-	}
+	// else if (this->mainlist.mn < stoi(sp[1]) && this->mainlist.openTradeList.empty())
+	// {
+	// 	return -1;
+	// }
 	else
 	{
 		this->mainlist.mn = stoi(sp[1]);
@@ -289,7 +290,7 @@ int ProcessData::sd(const string *sp, const int n)
 
 int ProcessData::cd(const string *sp, const int n)
 {
-	return this->mainlist.mn;
+	return this->mainlist.mn > 0 ? mainlist.mn + EP : mainlist.mn - EP;
 }
 
 int ProcessData::sl(const string *sp, const int n)
@@ -349,15 +350,24 @@ int ProcessData::ob(const string *sp, const int n)
 		open.QC = ptr->data.QC;
 		open.BC = ptr->data.BC;
 		open.isOpenBuy = true;
-		open.lot = stof(sp[4]);
+		open.lot = stod(sp[4]);
 		open.oMoney = temp->data.AP * open.lot * 100000;
 		if (open.oMoney > mainlist.mn * mainlist.lv)
 		{
 			return -1;
 		}
 		mainlist.openTradeList.insert({id, open});
-		cout << "insert: " << id << endl;
-		return myround(open.oMoney);
+
+		cout << "os id: " << id << " profit: " << open.oMoney << endl;
+
+		if (open.QC == "USD")
+		{
+			return open.oMoney > 0 ? (open.oMoney + EP) : (open.oMoney - EP);
+		}
+		else
+		{
+			return (open.oMoney / temp->data.AP) > 0 ? (open.oMoney / temp->data.AP) + EP : (open.oMoney / temp->data.AP) - EP;
+		}
 	}
 }
 int ProcessData::os(const string *sp, const int n)
@@ -398,15 +408,22 @@ int ProcessData::os(const string *sp, const int n)
 		open.QC = ptr->data.QC;
 		open.BC = ptr->data.BC;
 		open.isOpenBuy = false;
-		open.lot = stof(sp[4]);
+		open.lot = stod(sp[4]);
 		open.oMoney = temp->data.BP * open.lot * 100000;
 		if (open.oMoney > mainlist.mn * mainlist.lv)
 		{
 			return -1;
 		}
 		mainlist.openTradeList.insert({id, open});
-		cout << "insert: " << id << endl;
-		return myround(open.oMoney);
+		cout << "os id: " << id << " profit: " << open.oMoney << endl;
+		if (open.QC == "USD")
+		{
+			return open.oMoney > 0 ? (open.oMoney + EP) : (open.oMoney - EP);
+		}
+		else
+		{
+			return (open.oMoney / temp->data.AP) > 0 ? (open.oMoney / temp->data.AP) + EP : (open.oMoney / temp->data.AP) - EP;
+		}
 	}
 }
 
@@ -431,32 +448,24 @@ int ProcessData::cb(const string *sp, const int n)
 		openDetail open = this->mainlist.openTradeList[id];
 		double profit = cbProfit(stoi(sp[1]), open);
 		this->mainlist.openTradeList.erase(id);
-		mainlist.mn += profit;
+		cout << "cb id: " << id << " profit: " << profit << endl;
 		if (mainlist.mn <= 0)
 		{
 			map<int, openDetail>::iterator itr;
 			for (itr = this->mainlist.openTradeList.begin(); itr != this->mainlist.openTradeList.end(); ++itr)
 			{
-				cout << "id: " << itr->first << endl;
+				// cout << "id: " << itr->first << endl;
 				double calprofit;
 				if (itr->second.isOpenBuy)
 					calprofit = csProfit(atime.time, itr->second);
 				else
 					calprofit = cbProfit(atime.time, itr->second);
-				cout << "profit: " << calprofit << endl;
-				mainlist.mn += calprofit;
-				cout << "mn: " << mainlist.mn << endl;
+				// cout << "profit: " << calprofit << endl;
+				// cout << "mn: " << mainlist.mn << endl;
 			}
 			this->mainlist.openTradeList.clear();
 		}
-		if (open.QC == "USD")
-		{
-			return profit;
-		}
-		else
-		{
-			return myround((profit / temp->data.AP));
-		}
+		return profit > 0 ? profit + EP : profit - EP;
 	}
 }
 int ProcessData::cs(const string *sp, const int n)
@@ -482,7 +491,8 @@ int ProcessData::cs(const string *sp, const int n)
 		openDetail open = this->mainlist.openTradeList[id];
 		double profit = csProfit(stoi(sp[1]), open);
 		this->mainlist.openTradeList.erase(id);
-		mainlist.mn += profit;
+		cout << "cs id: " << id << " profit: " << profit << endl;
+
 		if (mainlist.mn <= 0)
 		{
 			map<int, openDetail>::iterator itr;
@@ -493,19 +503,11 @@ int ProcessData::cs(const string *sp, const int n)
 					calprofit = csProfit(atime.time, itr->second);
 				else
 					calprofit = cbProfit(atime.time, itr->second);
-				mainlist.mn += calprofit;
 				// this->mainlist.openTradeList.erase(itr->first);
 			}
 			this->mainlist.openTradeList.clear();
 		}
-		if (open.QC == "USD")
-		{
-			return profit;
-		}
-		else
-		{
-			return (profit / temp->data.AP);
-		}
+		return profit > 0 ? profit + EP : profit - EP;
 	}
 }
 
@@ -526,7 +528,14 @@ double ProcessData::csProfit(int time, openDetail open)
 		return -1;
 	}
 	double profit = (temp->data.BP * open.lot * 100000) - open.oMoney;
-	return myround(profit);
+	// cout << "cs lot: " << open.lot << " cs BP: " << temp->data.BP << " cs oMoney: " << open.oMoney << " profit: " << profit << endl;
+	if (open.QC != "USD")
+	{
+		profit /= temp->data.AP;
+	}
+	mainlist.mn += profit;
+	cout << "money: " << mainlist.mn << endl;
+	return profit;
 }
 double ProcessData::cbProfit(int time, openDetail open)
 {
@@ -545,7 +554,13 @@ double ProcessData::cbProfit(int time, openDetail open)
 		return -1;
 	}
 	double profit = open.oMoney - (temp->data.AP * open.lot * 100000);
-	return myround(profit);
+	if (open.QC != "USD")
+	{
+		profit /= temp->data.AP;
+	}
+	mainlist.mn += profit;
+	cout << "money: " << mainlist.mn << endl;
+	return profit;
 }
 
 int ProcessData::myround(double a)

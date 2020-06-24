@@ -1,6 +1,7 @@
 // #include "dbLib.h"
 #include "main.h"
 #include <queue>
+#define EP 1e-7
 
 //-----------------------utilities-------------------------
 void printNSpace(int n);
@@ -1018,7 +1019,7 @@ Node<T> *AVL<T>::minNode(Node<T> *&node)
 struct TimeUnit
 {
 	int time;
-	float BP, AP;
+	double BP, AP;
 	bool operator<(const TimeUnit &b)
 	{
 		return (this->time < b.time);
@@ -1048,8 +1049,8 @@ struct openDetail
 	int time;
 	string QC;
 	string BC;
-	float lot;
-	float oMoney;
+	double lot;
+	double oMoney;
 	bool isOpenBuy;
 };
 
@@ -1058,8 +1059,8 @@ class eList : public LList<Exchange>
 
 public:
 	bool firstSet;
-	int mn;
-	float lv;
+	double mn;
+	double lv;
 	map<int, openDetail> openTradeList;
 
 	Link<Exchange> *findExch(string bc, string qc)
