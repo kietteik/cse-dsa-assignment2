@@ -362,11 +362,11 @@ int ProcessData::ob(const string *sp, const int n)
 
 		if (open.QC == "USD")
 		{
-			return open.oMoney > 0 ? (open.oMoney + EP) : (open.oMoney - EP);
+			return myround(open.oMoney);
 		}
 		else
 		{
-			return (open.oMoney / temp->data.AP) > 0 ? (open.oMoney / temp->data.AP) + EP : (open.oMoney / temp->data.AP) - EP;
+			return myround(open.oMoney / temp->data.AP);
 		}
 	}
 }
@@ -418,11 +418,11 @@ int ProcessData::os(const string *sp, const int n)
 		cout << "os id: " << id << " profit: " << open.oMoney << endl;
 		if (open.QC == "USD")
 		{
-			return open.oMoney > 0 ? (open.oMoney + EP) : (open.oMoney - EP);
+			return myround(open.oMoney);
 		}
 		else
 		{
-			return (open.oMoney / temp->data.AP) > 0 ? (open.oMoney / temp->data.AP) + EP : (open.oMoney / temp->data.AP) - EP;
+			return myround(open.oMoney / temp->data.AP);
 		}
 	}
 }
@@ -465,7 +465,7 @@ int ProcessData::cb(const string *sp, const int n)
 			}
 			this->mainlist.openTradeList.clear();
 		}
-		return profit > 0 ? profit + EP : profit - EP;
+		return myround(profit);
 	}
 }
 int ProcessData::cs(const string *sp, const int n)
@@ -507,7 +507,7 @@ int ProcessData::cs(const string *sp, const int n)
 			}
 			this->mainlist.openTradeList.clear();
 		}
-		return profit > 0 ? profit + EP : profit - EP;
+		return myround(profit);
 	}
 }
 
@@ -565,7 +565,12 @@ double ProcessData::cbProfit(int time, openDetail open)
 
 int ProcessData::myround(double a)
 {
-	return a > 0 ? (int)ceil(a) : (int)floor(a);
+	if (abs(a - (int)(a > 0 ? a + EP : a - EP)) < EP)
+	{
+		return (int)(a > 0 ? a + EP : a - EP);
+	}
+	else
+		return a > 0 ? (int)ceil(a) : (int)floor(a);
 }
 
 //-----------------------PROCESS DATA-------------------------
