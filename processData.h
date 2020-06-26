@@ -1,6 +1,6 @@
 // #include "dbLib.h"
 #include "main.h"
-#include <queue>
+// #include <queue>
 #define EP 1e-7
 
 //-----------------------utilities-------------------------
@@ -451,10 +451,11 @@ Node<T> *AVL<T>::insertRec(Node<T> *&node, T &value, bool &taller)
 			}
 		}
 	}
-	else if (value.time == node->data.time)
+	else if (value == node->data)
 	{
-		node->data.BP = value.BP;
-		node->data.AP = value.AP;
+		node->data = value;
+		// node->data.BP = value.BP;
+		// node->data.AP = value.AP;
 		taller = false;
 		return node;
 	}
@@ -873,58 +874,55 @@ void AVL<T>::clear()
 	this->clearRec(this->root);
 }
 
-template <class T>
-void AVL<T>::printTreeStructure()
-{
-	int height = this->getHeight();
-
-	if (this->root == NULL)
-	{
-		cout << "NULL\n";
-		return;
-	}
-	queue<Node<T> *> q;
-	q.push(root);
-	Node<T> *temp;
-	int count = 0;
-	int maxNode = 1;
-	int level = 0;
-	int space = pow(2, height);
-	printNSpace(space / 2);
-	while (!q.empty())
-	{
-		temp = q.front();
-		q.pop();
-
-		if (temp == NULL)
-		{
-			cout << " ";
-			q.push(NULL);
-			q.push(NULL);
-		}
-		else
-		{
-
-			// cout << temp->data.time << "-" << temp->data.BP;
-			cout << temp->data.time;
-			q.push(temp->left);
-			q.push(temp->right);
-		}
-		printNSpace(space);
-		count++;
-		if (count == maxNode)
-		{
-			cout << endl;
-			count = 0;
-			maxNode *= 2;
-			level++;
-			space /= 2;
-			printNSpace(space / 2);
-		}
-		if (level == height)
-			return;
-	}
-}
+// template <class T>
+// void AVL<T>::printTreeStructure()
+// {
+// 	int height = this->getHeight();
+// 	if (this->root == NULL)
+// 	{
+// 		cout << "NULL\n";
+// 		return;
+// 	}
+// 	queue<Node<T> *> q;
+// 	q.push(root);
+// 	Node<T> *temp;
+// 	int count = 0;
+// 	int maxNode = 1;
+// 	int level = 0;
+// 	int space = pow(2, height);
+// 	printNSpace(space / 2);
+// 	while (!q.empty())
+// 	{
+// 		temp = q.front();
+// 		q.pop();
+// 		if (temp == NULL)
+// 		{
+// 			cout << " ";
+// 			q.push(NULL);
+// 			q.push(NULL);
+// 		}
+// 		else
+// 		{
+// 			// cout << temp->data.time << "-" << temp->data.BP;
+// 			cout << to_string(temp->data);
+// 			q.push(temp->left);
+// 			q.push(temp->right);
+// 		}
+// 		printNSpace(space);
+// 		count++;
+// 		if (count == maxNode)
+// 		{
+// 			cout << endl;
+// 			count = 0;
+// 			maxNode *= 2;
+// 			level++;
+// 			space /= 2;
+// 			printNSpace(space / 2);
+// 		}
+// 		if (level == height)
+// 			return;
+// 	}
+// }
 
 template <class T>
 bool AVL<T>::checkTimeRangeTravRec(Node<T> *&node, T &value1, T &value2)
@@ -1062,7 +1060,7 @@ public:
 	double mn;
 	double lv;
 	map<int, openDetail> openTradeList;
-
+	AVL<int> openedIdList;
 	Link<Exchange> *findExch(string bc, string qc)
 	{
 		Link<Exchange> *pTemp = this->head;

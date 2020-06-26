@@ -85,7 +85,6 @@ int ProcessData::split(string line, string *&sp)
 
 int ProcessData::process(string line)
 {
-	// cout << line << endl;
 	if (line.length() < 2)
 	{
 		return -1;
@@ -95,8 +94,6 @@ int ProcessData::process(string line)
 	string *p;
 	int n;
 	n = ProcessData::split(line, p);
-	// cout << p[0] << ": " << p[0].length() << endl;
-	// cout << n << endl;
 	if (n <= 0 || p[0].length() == 1)
 	{
 		delete[] p;
@@ -181,20 +178,17 @@ int ProcessData::del(const string *sp, const int n)
 {
 	if (n > 5 || n < 3 || sp[1].length() > 3 || sp[2].length() > 3)
 	{
-		// cout << "validin";
 		return -1;
 	}
 	Link<Exchange> *ptr = this->mainlist.findExch(sp[1], sp[2]);
 	if (ptr == NULL)
 	{
-		// cout << "ptr is null";
 		return -1;
 	}
 	else
 	{
 		if (ptr->data.tree.root == NULL)
 		{
-			// cout << "root is null";
 			return -1;
 		}
 		else if (n == 5)
@@ -277,10 +271,10 @@ int ProcessData::sd(const string *sp, const int n)
 	// 	return -1;
 	// }
 	//3.3.2 contraint
-	// else if (this->mainlist.mn < stoi(sp[1]) && this->mainlist.openTradeList.empty())
-	// {
-	// 	return -1;
-	// }
+	else if (this->mainlist.mn >= stoi(sp[1]) && !this->mainlist.openTradeList.empty())
+	{
+		return -1;
+	}
 	else
 	{
 		this->mainlist.mn = stoi(sp[1]);
@@ -295,7 +289,6 @@ int ProcessData::cd(const string *sp, const int n)
 
 int ProcessData::sl(const string *sp, const int n)
 {
-	// cout << "sl called\n";
 	if (n != 2 || !isDigitString(sp[1]))
 	{
 		return -1;
@@ -357,8 +350,9 @@ int ProcessData::ob(const string *sp, const int n)
 			return -1;
 		}
 		mainlist.openTradeList.insert({id, open});
+		mainlist.openedIdList.insert(id);
 
-		cout << "os id: " << id << " profit: " << open.oMoney << endl;
+		// cout << "os id: " << id << " profit: " << open.oMoney << endl;
 
 		if (open.QC == "USD")
 		{
@@ -381,7 +375,7 @@ int ProcessData::os(const string *sp, const int n)
 		return -1;
 	}
 	int id = stoi(sp[5]);
-	if (this->mainlist.openTradeList.count(id))
+	if (this->mainlist.openedIdList.checkTimeRangeTrav(id, id))
 	{
 		return -1;
 	}
@@ -415,7 +409,9 @@ int ProcessData::os(const string *sp, const int n)
 			return -1;
 		}
 		mainlist.openTradeList.insert({id, open});
-		cout << "os id: " << id << " profit: " << open.oMoney << endl;
+		mainlist.openedIdList.insert(id);
+
+		// cout << "os id: " << id << " profit: " << open.oMoney << endl;
 		if (open.QC == "USD")
 		{
 			return myround(open.oMoney);
@@ -434,7 +430,6 @@ int ProcessData::cb(const string *sp, const int n)
 		return -1;
 	}
 	int id = stoi(sp[2]);
-	Node<TimeUnit> *temp;
 	TimeUnit atime;
 	atime.time = stoi(sp[1]);
 	if (!this->mainlist.openTradeList.count(id))
@@ -448,20 +443,17 @@ int ProcessData::cb(const string *sp, const int n)
 		openDetail open = this->mainlist.openTradeList[id];
 		double profit = cbProfit(stoi(sp[1]), open);
 		this->mainlist.openTradeList.erase(id);
-		cout << "cb id: " << id << " profit: " << profit << endl;
+		// cout << "cb id: " << id << " profit: " << profit << endl;
 		if (mainlist.mn <= 0)
 		{
 			map<int, openDetail>::iterator itr;
 			for (itr = this->mainlist.openTradeList.begin(); itr != this->mainlist.openTradeList.end(); ++itr)
 			{
 				// cout << "id: " << itr->first << endl;
-				double calprofit;
 				if (itr->second.isOpenBuy)
-					calprofit = csProfit(atime.time, itr->second);
+					csProfit(atime.time, itr->second);
 				else
-					calprofit = cbProfit(atime.time, itr->second);
-				// cout << "profit: " << calprofit << endl;
-				// cout << "mn: " << mainlist.mn << endl;
+					cbProfit(atime.time, itr->second);
 			}
 			this->mainlist.openTradeList.clear();
 		}
@@ -475,7 +467,6 @@ int ProcessData::cs(const string *sp, const int n)
 		return -1;
 	}
 	int id = stoi(sp[2]);
-	Node<TimeUnit> *temp;
 	TimeUnit atime;
 	atime.time = stoi(sp[1]);
 	if (!this->mainlist.openTradeList.count(id))
@@ -491,18 +482,19 @@ int ProcessData::cs(const string *sp, const int n)
 		openDetail open = this->mainlist.openTradeList[id];
 		double profit = csProfit(stoi(sp[1]), open);
 		this->mainlist.openTradeList.erase(id);
-		cout << "cs id: " << id << " profit: " << profit << endl;
-
+		// cout << "cs id: " << id << " profit: " << profit << endl;
+		// cout << "id traded: " << endl;
+		// mainlist.openedIdList.printTreeStructure();
+		// cout << endl;
 		if (mainlist.mn <= 0)
 		{
 			map<int, openDetail>::iterator itr;
 			for (itr = this->mainlist.openTradeList.begin(); itr != this->mainlist.openTradeList.end(); ++itr)
 			{
-				double calprofit;
 				if (itr->second.isOpenBuy)
-					calprofit = csProfit(atime.time, itr->second);
+					csProfit(atime.time, itr->second);
 				else
-					calprofit = cbProfit(atime.time, itr->second);
+					cbProfit(atime.time, itr->second);
 				// this->mainlist.openTradeList.erase(itr->first);
 			}
 			this->mainlist.openTradeList.clear();
@@ -534,7 +526,7 @@ double ProcessData::csProfit(int time, openDetail open)
 		profit /= temp->data.AP;
 	}
 	mainlist.mn += profit;
-	cout << "money: " << mainlist.mn << endl;
+	// cout << "money: " << mainlist.mn << endl;
 	return profit;
 }
 double ProcessData::cbProfit(int time, openDetail open)
@@ -559,7 +551,7 @@ double ProcessData::cbProfit(int time, openDetail open)
 		profit /= temp->data.AP;
 	}
 	mainlist.mn += profit;
-	cout << "money: " << mainlist.mn << endl;
+	// cout << "money: " << mainlist.mn << endl;
 	return profit;
 }
 
