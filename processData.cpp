@@ -566,12 +566,13 @@ double ProcessData::cbProfit(int time, openDetail open)
 
 int ProcessData::myround(double a)
 {
-	if (abs(a - (int)(a > 0 ? a + EP : a - EP)) < EP)
-	{
-		return (int)(a > 0 ? a + EP : a - EP);
-	}
-	else
-		return a > 0 ? (int)ceil(a) : (int)floor(a);
+	// if (abs(a - (int)(a > 0 ? a + EP : a - EP)) < EP)
+	// {
+	// 	return (int)(a > 0 ? a + EP : a - EP);
+	// }
+	// else
+	// 	return a > 0 ? (int)ceil(a) : (int)floor(a);
+	return (a >= EP) ? ceil(a) : floor(a);
 }
 
 //-----------------------PROCESS DATA-------------------------
