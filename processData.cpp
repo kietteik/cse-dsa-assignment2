@@ -193,19 +193,28 @@ int ProcessData::del(const string *sp, const int n)
 		}
 		else if (n == 5)
 		{
-			if (sp[3] > sp[4])
-				return -1;
 			TimeUnit a;
 			a.time = stoi(sp[3]);
 			TimeUnit b;
 			b.time = stoi(sp[4]);
-			while (ptr->data.tree.checkTimeRangeTrav(a, b))
+			if (a.time > b.time)
+				return -1;
+			// while (ptr->data.tree.checkTimeRangeTrav(a, b))
+			// {
+			// 	ptr->data.tree.removeInRange(a, b);
+			// }
+			bool success;
+			bool shorter;
+			do
 			{
-				ptr->data.tree.removeInRange(a, b);
-			}
+				shorter = false;
+				success = false;
+				ptr->data.tree.removeInRangeRec(ptr->data.tree.root, a, b, shorter, success);
+			} while (success == true);
+
 			if (ptr->data.tree.root == NULL)
 			{
-				return 1;
+				return -1;
 			}
 			return ptr->data.tree.root->data.time;
 		}
@@ -216,14 +225,14 @@ int ProcessData::del(const string *sp, const int n)
 			ptr->data.tree.removeInRange(a, a);
 			if (ptr->data.tree.root == NULL)
 			{
-				return 1;
+				return -1;
 			}
 			return ptr->data.tree.root->data.time;
 		}
 		else
 		{
 			ptr->data.tree.~AVL();
-			return 1;
+			return -1;
 		}
 	}
 }
@@ -316,7 +325,7 @@ int ProcessData::ob(const string *sp, const int n)
 		return -1;
 	}
 	int id = stoi(sp[5]);
-	if (this->mainlist.openTradeList.count(id))
+	if (this->mainlist.openedIdList.checkTimeRangeTrav(id, id))
 	{
 		return -1;
 	}

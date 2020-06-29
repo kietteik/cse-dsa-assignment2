@@ -1078,7 +1078,7 @@ public:
 	{
 		mn = 0;
 		firstSet = false;
-		lv = 0;
+		lv = 1;
 	}
 };
 
